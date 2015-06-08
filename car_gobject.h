@@ -21,6 +21,11 @@
                                  CAR_TYPE,                    \
                                  CarPrivate))
 
+typedef enum 
+{
+  CAR_LEFT, 
+  CAR_RIGHT,
+} CarDirection;
 
 typedef struct _Car		Car;
 typedef struct _CarClass	CarClass;
@@ -42,10 +47,19 @@ GType car_get_type (void);
 
 void car_update (Car *self);
 
+void car_set_accelerating (Car *self, gboolean accelerating);
+
+void car_set_strafing (Car *self, CarDirection dir, gboolean x);
+
+void car_set_decelerating (Car *self, gboolean decelerating);
+
 gboolean is_accelerating (Car *self);
 
 gfloat car_get_current_speed (Car *self);
 
-void button_clicked(GtkWidget *widget, gpointer data);
+gfloat car_get_current_position (Car *self);
+
+gfloat car_get_current_distance (Car *self);
+
 #endif /* CAR_GOBJECT_H */
 

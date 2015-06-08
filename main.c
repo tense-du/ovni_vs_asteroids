@@ -1,41 +1,62 @@
 #include <gtk/gtk.h>
 #include "car_gobject.h"
 
+
 typedef struct _Simulation
 {
   Car *car;
   GtkWidget *speed_label;
+  GtkWidget *position_label;
+  GtkWidget *distance_label;
 } Simulation;
 
 static void key_released (GtkWidget *widget, GdkEvent *event, Car *car)
 {
   if (((GdkEventKey*)event)->keyval == GDK_KEY_Up) {
-    set_accelerating (car, FALSE);
+    car_set_accelerating (car, FALSE);
   }
   if (((GdkEventKey*)event)->keyval == GDK_KEY_Down) {
-    set_decelerating (car, FALSE);
+    car_set_decelerating (car, FALSE);
+  }
+  if (((GdkEventKey*)event)->keyval == GDK_KEY_Right) {
+    car_set_strafing (car, CAR_RIGHT, FALSE);
+  }
+  if (((GdkEventKey*)event)->keyval == GDK_KEY_Left) {
+   car_set_strafing (car, CAR_LEFT, FALSE);
   }
 }
 
 static void key_pressed(GtkWidget *widget, GdkEvent *event, Car *car)
 {
   if (((GdkEventKey*)event)->keyval == GDK_KEY_Up) {
-    set_accelerating (car, TRUE);
+    car_set_accelerating (car, TRUE);
   }
   if (((GdkEventKey*)event)->keyval == GDK_KEY_Down) {
-    set_decelerating (car, TRUE);
+    car_set_decelerating (car, TRUE);
+  }
+  if (((GdkEventKey*)event)->keyval == GDK_KEY_Right) {
+    car_set_strafing (car, CAR_RIGHT, TRUE);
+  }
+  if (((GdkEventKey*)event)->keyval == GDK_KEY_Left) {
+    car_set_strafing (car, CAR_LEFT, TRUE);
   }
 }
 
-static void
+  static void
 display_car (Simulation *s)
 {
-  gchar *speed_text = g_strdup_printf ("%f", car_get_current_speed (s->car));
+  gchar *speed_text = g_strdup_printf ("SPEED  %f", car_get_current_speed (s->car));
+  gchar *distance_text = g_strdup_printf ("DISTANCE %f", car_get_current_distance (s->car));
+  gchar *position_text = g_strdup_printf ("POSITION %f", car_get_current_position (s->car));
   gtk_label_set_text (GTK_LABEL (s->speed_label), speed_text);
   g_free (speed_text);
+  gtk_label_set_text (GTK_LABEL (s->distance_label), distance_text);
+  g_free (distance_text);
+  gtk_label_set_text (GTK_LABEL (s->position_label), position_text);
+  g_free (position_text);
 }
 
-static gboolean
+  static gboolean
 update_simulation (Simulation *s)
 {
   car_update (s->car);
@@ -59,11 +80,19 @@ int main( int argc, char *argv[])
 
   fill_tank (c, 50);
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title(GTK_WINDOW(window), "GtkButton");
+  gtk_window_set_title(GTK_WINDOW(window), "KIKABOE");
   gtk_window_set_default_size(GTK_WINDOW(window), 230, 150);
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 
   gtk_container_add (GTK_CONTAINER (window), vbox);
+
+  simulation->position_label = gtk_label_new("");
+  gtk_box_pack_start (GTK_BOX (vbox), simulation->position_label, TRUE, TRUE, 0);
+  gtk_label_set_text (GTK_LABEL (simulation->position_label), "POSITION");
+
+  simulation->distance_label = gtk_label_new ("");
+  gtk_box_pack_start(GTK_BOX(vbox), simulation->distance_label, TRUE, TRUE, 0);
+  gtk_label_set_text (GTK_LABEL(simulation->distance_label), "DISTANCE");
 
   simulation->speed_label = gtk_label_new ("");
   gtk_box_pack_start (GTK_BOX (vbox), simulation->speed_label, TRUE, TRUE, 0); 
