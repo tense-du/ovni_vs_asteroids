@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include "car_gobject.h"
+#include "battlefield.h"
 
 
 typedef struct _Simulation
@@ -69,6 +70,7 @@ update_simulation (Simulation *s)
 int main( int argc, char *argv[])
 {
   Car *c = NULL;
+  Galaxy *galaxy = NULL;
   GtkWidget *window;
   GtkWidget *vbox;
   Simulation *simulation = g_malloc0 (sizeof (Simulation));
@@ -77,6 +79,7 @@ int main( int argc, char *argv[])
 
   vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
   c = g_object_new (CAR_TYPE, NULL);
+  galaxy = g_object_new (GALAXY_TYPE, NULL);
 
   fill_tank (c, 50);
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
