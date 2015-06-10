@@ -75,6 +75,7 @@ void car_update (Car *self)
   gfloat per_second = self->priv->current_speed / 3.6;
   self->priv->distance += per_second / 60 ;
   self->priv->position += self->priv->strafing;
+
   if (self->priv->position > 1) {
     self->priv->position = 1;
   }

@@ -2,6 +2,7 @@
 #define BATTLEFIELD_H
 
 #include <glib-object.h>
+#include "car_gobject.h"
 #include <glib.h>
 #include <gtk/gtk.h>
 
@@ -24,7 +25,6 @@
 typedef struct _Galaxy             Galaxy;
 typedef struct _GalaxyClass        GalaxyClass;
 typedef struct _GalaxyPrivate      GalaxyPrivate;
-typedef struct _Asteroids         Asteroids;    
 struct _Galaxy
 {
   GObject parent;
@@ -39,5 +39,10 @@ struct _GalaxyClass
 
 GType galaxy_get_type (void);
 
-#endif /* BATTLEFIELD_H */
+void create_asteroids (Galaxy*self);
 
+void galaxy_set_car (Galaxy *galaxy, Car *car);
+
+void battlefield_update (Galaxy *galaxy);
+
+#endif /* BATTLEFIELD_H */

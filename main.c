@@ -5,6 +5,7 @@
 
 typedef struct _Simulation
 {
+  Galaxy *galaxy;
   Car *car;
   GtkWidget *speed_label;
   GtkWidget *position_label;
@@ -44,16 +45,16 @@ static void key_pressed(GtkWidget *widget, GdkEvent *event, Car *car)
 }
 
   static void
-display_car (Simulation *s)
+display_car (Simulation *self)
 {
-  gchar *speed_text = g_strdup_printf ("SPEED  %f", car_get_current_speed (s->car));
-  gchar *distance_text = g_strdup_printf ("DISTANCE %f", car_get_current_distance (s->car));
-  gchar *position_text = g_strdup_printf ("POSITION %f", car_get_current_position (s->car));
-  gtk_label_set_text (GTK_LABEL (s->speed_label), speed_text);
+  gchar *speed_text = g_strdup_printf ("SPEED  %f", car_get_current_speed (self->car));
+  gchar *distance_text = g_strdup_printf ("DISTANCE %f", car_get_current_distance (self->car));
+  gchar *position_text = g_strdup_printf ("POSITION %f", car_get_current_position (self->car));
+  gtk_label_set_text (GTK_LABEL (self->speed_label), speed_text);
   g_free (speed_text);
-  gtk_label_set_text (GTK_LABEL (s->distance_label), distance_text);
+  gtk_label_set_text (GTK_LABEL (self->distance_label), distance_text);
   g_free (distance_text);
-  gtk_label_set_text (GTK_LABEL (s->position_label), position_text);
+  gtk_label_set_text (GTK_LABEL (self->position_label), position_text);
   g_free (position_text);
 }
 
@@ -61,6 +62,8 @@ display_car (Simulation *s)
 update_simulation (Simulation *s)
 {
   car_update (s->car);
+
+  battlefield_update (s->galaxy);
 
   display_car (s);
 
@@ -111,7 +114,14 @@ int main( int argc, char *argv[])
 
   gtk_widget_show_all(window);
 
+  simulation->galaxy = galaxy;
+
   simulation->car = c;
+
+  galaxy_set_car (galaxy, c);
+
+  create_asteroids (galaxy);
+
   g_timeout_add (1000 / 60,(GSourceFunc)update_simulation, simulation);
 
   gtk_main();
