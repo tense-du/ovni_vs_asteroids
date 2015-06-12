@@ -9,15 +9,15 @@ struct _CarPrivate
   gfloat current_speed;
   gboolean accelerating;
   gboolean decelerating;
-  gfloat position;
-  gfloat strafing;
-  gfloat distance;
+  gint position;
+  gint strafing;
+  guint64 distance;
+  gint right_limit;
 
 };
 
 static void car_class_init (CarClass *klass)
 {
-
   g_type_class_add_private (klass, sizeof(CarPrivate));
 }
 
@@ -32,9 +32,16 @@ static void car_init (Car *self)
   self->priv->position = 0;
   self->priv->strafing = 0;
   self->priv->distance = 0;
+  self->priv->right_limit = 0;
 }
 
 G_DEFINE_TYPE (Car, car, G_TYPE_OBJECT)
+
+void car_set_starting_point (Car *self, gint limit)
+{
+  self->priv->position = limit / 2;
+  self->priv->right_limit = limit;
+}
 
 void car_set_accelerating (Car *self, gboolean accelerating)
 {
@@ -46,10 +53,12 @@ void car_set_strafing (Car *self, CarDirection dir, gboolean on_off)
   if (on_off == FALSE) {
     self->priv->strafing = 0;
   }
-  if (dir == CAR_RIGHT) {
-    self->priv->strafing = 0.01;
-  } else {
-    self->priv->strafing = -0.01;
+  if (on_off == TRUE) {
+    if (dir == CAR_RIGHT) {
+      self->priv->strafing = 1;
+    } else {
+      self->priv->strafing = -1;
+    }
   }
 }
 void car_set_decelerating (Car *self, gboolean decelerating)
@@ -72,16 +81,16 @@ static void decelerating (Car *self)
 
 void car_update (Car *self)
 {
-  gfloat per_second = self->priv->current_speed / 3.6;
+  gfloat per_second = self->priv->current_speed / 0.00036;
   self->priv->distance += per_second / 60 ;
-  self->priv->position += self->priv->strafing;
 
-  if (self->priv->position > 1) {
-    self->priv->position = 1;
+  self->priv->position += self->priv->strafing;
+  if (self->priv->position > self->priv->right_limit) {
+    self->priv->position = self->priv->right_limit;
   }
-  if (self->priv->position < -1) {
-    self->priv->position = -1;
-  }
+  if (self->priv->position < 0) {
+    self->priv->position = 0;
+  }  
   if (self->priv->accelerating) {
     speed_up (self);
   } if (self->priv->decelerating) {
@@ -111,12 +120,12 @@ gfloat car_get_current_speed (Car *self)
   return self->priv->current_speed;
 }
 
-gfloat car_get_current_position (Car *self)
+gint car_get_current_position (Car *self)
 {
   return self->priv->position;
 }
 
-gfloat car_get_current_distance (Car *self)
+guint64 car_get_current_distance (Car *self)
 {
   return self->priv->distance;
 }
@@ -129,5 +138,3 @@ gboolean fill_tank (Car * self, gint fuel_quantity)
   self->priv->current_tank_level += fuel_quantity;
   return TRUE;
 }
-
-

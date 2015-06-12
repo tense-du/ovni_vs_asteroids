@@ -45,4 +45,6 @@ void galaxy_set_car (Galaxy *galaxy, Car *car);
 
 void battlefield_update (Galaxy *galaxy);
 
+gboolean battlefield_check_collision (Galaxy *galaxy);
+
 #endif /* BATTLEFIELD_H */

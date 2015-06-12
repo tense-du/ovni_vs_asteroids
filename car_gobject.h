@@ -1,5 +1,5 @@
 #ifndef CAR_GOBJECT_H
-#define CAR_OBJECT_H
+#define CAR_GOBJECT_H
 
 #include <glib-object.h>
 #include <glib.h>
@@ -47,6 +47,8 @@ GType car_get_type (void);
 
 void car_update (Car *self);
 
+void car_set_starting_point (Car *self, gint starting_point);
+
 void car_set_accelerating (Car *self, gboolean accelerating);
 
 void car_set_strafing (Car *self, CarDirection dir, gboolean x);
@@ -57,9 +59,9 @@ gboolean is_accelerating (Car *self);
 
 gfloat car_get_current_speed (Car *self);
 
-gfloat car_get_current_position (Car *self);
+gint car_get_current_position (Car *self);
 
-gfloat car_get_current_distance (Car *self);
+guint64 car_get_current_distance (Car *self);
 
 #endif /* CAR_GOBJECT_H */
 
