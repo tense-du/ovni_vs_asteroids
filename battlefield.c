@@ -3,13 +3,6 @@
 #include <stdio.h>
 #include <glib.h>
 
-typedef struct
-{
-  gint x;
-  gint y;
-  gint size;
-} Asteroid;
-
 struct _GalaxyPrivate
 {
   Car *car;
@@ -30,7 +23,7 @@ static void galaxy_init (Galaxy*self)
 {
   self->priv = GALAXY_GET_PRIVATE (self);
   self->priv->car = NULL;
-  self->priv->x= 500;
+  self->priv->x= 800;
   self->priv->y = 2000;
   self->priv->asteroids = NULL;
   self->priv->end_race = FALSE;
@@ -39,6 +32,11 @@ static void galaxy_init (Galaxy*self)
 }
 
 G_DEFINE_TYPE (Galaxy, galaxy, G_TYPE_OBJECT)
+
+GList *battlefield_get_asteroids (Galaxy *galaxy)
+{
+  return galaxy->priv->asteroids;
+}
 
 void galaxy_set_car (Galaxy *galaxy, Car *car)
 {
@@ -95,9 +93,7 @@ void battlefield_update (Galaxy *self)
       self->priv->asteroids = self->priv->asteroids->next;
     }
   }
-  if (battlefield_check_collision (self)) {
-    g_print ("U DEAD\n");
-  }
+  battlefield_check_collision (self);
 }
 
 gboolean battlefield_check_collision (Galaxy*self)
@@ -115,7 +111,6 @@ gboolean battlefield_check_collision (Galaxy*self)
 
   if (car_y >= current->y && car_y < current->y + current->size * 15) {
     if (car_x >= current->x && car_x < current->x + current->size * 15) {
-      g_print ("Collision at ordinate x %d, y %d\n", car_x, car_y);
       self->priv->dead = TRUE;
       return TRUE;
     }

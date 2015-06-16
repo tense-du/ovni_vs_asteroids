@@ -25,6 +25,16 @@
 typedef struct _Galaxy             Galaxy;
 typedef struct _GalaxyClass        GalaxyClass;
 typedef struct _GalaxyPrivate      GalaxyPrivate;
+
+
+typedef struct
+{
+  gint x;
+  gint y;
+  gint size;
+} Asteroid;
+
+
 struct _Galaxy
 {
   GObject parent;
@@ -47,4 +57,5 @@ void battlefield_update (Galaxy *galaxy);
 
 gboolean battlefield_check_collision (Galaxy *galaxy);
 
+GList * battlefield_get_asteroids (Galaxy *galaxy);
 #endif /* BATTLEFIELD_H */

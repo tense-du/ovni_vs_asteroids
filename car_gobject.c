@@ -67,14 +67,14 @@ void car_set_decelerating (Car *self, gboolean decelerating)
 }
 static void slow_down (Car *self)
 {
-  self->priv->current_speed -= 0.02;
+  self->priv->current_speed -= 0.002;
   if (self->priv->current_speed < 0)
     self->priv->current_speed = 0;
 }
 
 static void decelerating (Car *self)
 {
-  self->priv->current_speed -= 0.5;
+  self->priv->current_speed -= 0.05;
   if (self->priv->current_speed <0) 
     self->priv->current_speed = 0;
 }
@@ -110,7 +110,7 @@ gboolean speed_up (Car *self)
   if (self->priv->current_tank_level -1 < 0) {
     return FALSE;
   }
-  self->priv->current_speed += 0.15;
+  self->priv->current_speed += 0.015;
   self->priv->current_tank_level -= 0.000027778;
   return TRUE;
 }
