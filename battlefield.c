@@ -5,16 +5,16 @@
 
 typedef struct
 {
-  gint ordinate_x;
-  gint ordinate_y;
-  gint asteroid_size;
+  gint x;
+  gint y;
+  gint size;
 } Asteroid;
 
 struct _GalaxyPrivate
 {
   Car *car;
-  gfloat length;
-  gfloat width;
+  gfloat x;
+  gfloat y;
   GList *asteroids;
   gboolean end_race;
   gboolean victory;
@@ -30,8 +30,8 @@ static void galaxy_init (Galaxy*self)
 {
   self->priv = GALAXY_GET_PRIVATE (self);
   self->priv->car = NULL;
-  self->priv->length = 1000;
-  self->priv->width = 500;
+  self->priv->x= 500;
+  self->priv->y = 2000;
   self->priv->asteroids = NULL;
   self->priv->end_race = FALSE;
   self->priv->victory = FALSE;
@@ -43,25 +43,25 @@ G_DEFINE_TYPE (Galaxy, galaxy, G_TYPE_OBJECT)
 void galaxy_set_car (Galaxy *galaxy, Car *car)
 {
   galaxy->priv->car = car;
-  car_set_starting_point (galaxy->priv->car, galaxy->priv->width);
+  car_set_starting_point (galaxy->priv->car, galaxy->priv->x);
 }
 
 void create_asteroids (Galaxy*self)
 {
-  gint x;
+  gint y;
   Asteroid* current_asteroid;
   GList *tmp;
 
-  for (x = 0; x < self->priv->length; x += 100) {
+  for (y = 0; y < self->priv->y; y += 200) {
     current_asteroid = g_malloc0(sizeof(Asteroid));
-    current_asteroid->ordinate_x = x;
-    current_asteroid->ordinate_y = g_rand_int_range (g_rand_new(), 0, self->priv->width +1 );
-    current_asteroid->asteroid_size = g_rand_int_range (g_rand_new(), 1, 4);
+    current_asteroid->y = y;
+    current_asteroid->x = g_rand_int_range (g_rand_new(), 0, self->priv->x +1 );
+    current_asteroid->size = g_rand_int_range (g_rand_new(), 1, 4);
     self->priv->asteroids = g_list_append (self->priv->asteroids, current_asteroid);
   }
   for (tmp = self->priv->asteroids; tmp; tmp = tmp->next) {
     current_asteroid = (Asteroid*)tmp->data;
-    g_print ("Au metre %d, position %d, asteroide de taille %d\n", current_asteroid->ordinate_x, current_asteroid->ordinate_y, current_asteroid->asteroid_size);
+    g_print ("A x: %d, y: %d, asteroide de taille %d\n", current_asteroid->x, current_asteroid->y, current_asteroid->size);
   }
 }
 
@@ -73,7 +73,7 @@ void battlefield_update (Galaxy *self)
     if (self->priv->dead) {
       self->priv->victory = FALSE;
       if (self->priv->end_race == FALSE) {
-        if (car_get_current_distance (self->priv->car) >= self->priv->length) {
+        if (car_get_y (self->priv->car) >= self->priv->y) {
           self->priv->end_race = TRUE;
           g_print ("LOOOSER");
         }
@@ -81,7 +81,7 @@ void battlefield_update (Galaxy *self)
     }
     else {
       self->priv->victory = TRUE;
-      if (car_get_current_distance(self->priv->car) >= self->priv->length) {
+      if (car_get_y(self->priv->car) >= self->priv->y) {
         if (self->priv->end_race == FALSE) {
           self->priv->end_race = TRUE;
           g_print ("VICTOIRE!");
@@ -91,26 +91,31 @@ void battlefield_update (Galaxy *self)
   }
   else {
     current = (Asteroid*)self->priv->asteroids->data;
-    if (car_get_current_distance (self->priv->car) > current->ordinate_x) {
+    if (car_get_y (self->priv->car) >= current->y + current->size * 15) {
       self->priv->asteroids = self->priv->asteroids->next;
     }
+  }
+  if (battlefield_check_collision (self)) {
+    g_print ("U DEAD\n");
   }
 }
 
 gboolean battlefield_check_collision (Galaxy*self)
 {
   Asteroid *current;
-  guint64 car_distance = car_get_current_distance (self->priv->car);
-  gint car_position = car_get_current_position (self->priv->car);
+  guint64 car_y = car_get_y (self->priv->car);
+  gint car_x = car_get_x (self->priv->car);
 
   if (self->priv->asteroids == NULL) {
     return FALSE;
   }
+
+  
   current = (Asteroid*)self->priv->asteroids->data;
 
-  if (car_distance >= current->ordinate_x && car_distance <= current->ordinate_x+current->asteroid_size * 15 - 1) {
-    if (car_position >= current->ordinate_y && car_position <= current->ordinate_y + current->asteroid_size * 15 - 1) {
-      g_print ("Collision at level %d, position %d\n", car_distance, car_position);
+  if (car_y >= current->y && car_y < current->y + current->size * 15) {
+    if (car_x >= current->x && car_x < current->x + current->size * 15) {
+      g_print ("Collision at ordinate x %d, y %d\n", car_x, car_y);
       self->priv->dead = TRUE;
       return TRUE;
     }

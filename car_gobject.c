@@ -9,9 +9,9 @@ struct _CarPrivate
   gfloat current_speed;
   gboolean accelerating;
   gboolean decelerating;
-  gint position;
+  gint x;
   gint strafing;
-  guint64 distance;
+  guint64 y;
   gint right_limit;
 
 };
@@ -29,9 +29,9 @@ static void car_init (Car *self)
   self->priv->current_speed = 0;
   self->priv->accelerating = FALSE;
   self->priv->decelerating = FALSE;
-  self->priv->position = 0;
+  self->priv->x = 0;
   self->priv->strafing = 0;
-  self->priv->distance = 0;
+  self->priv->y = 0;
   self->priv->right_limit = 0;
 }
 
@@ -39,7 +39,7 @@ G_DEFINE_TYPE (Car, car, G_TYPE_OBJECT)
 
 void car_set_starting_point (Car *self, gint limit)
 {
-  self->priv->position = limit / 2;
+  self->priv->x = limit / 2;
   self->priv->right_limit = limit;
 }
 
@@ -82,14 +82,14 @@ static void decelerating (Car *self)
 void car_update (Car *self)
 {
   gfloat per_second = self->priv->current_speed / 0.00036;
-  self->priv->distance += per_second / 60 ;
+  self->priv->y += per_second / 60 ;
 
-  self->priv->position += self->priv->strafing;
-  if (self->priv->position > self->priv->right_limit) {
-    self->priv->position = self->priv->right_limit;
+  self->priv->x += self->priv->strafing;
+  if (self->priv->x > self->priv->right_limit) {
+    self->priv->x = self->priv->right_limit;
   }
-  if (self->priv->position < 0) {
-    self->priv->position = 0;
+  if (self->priv->x < 0) {
+    self->priv->x = 0;
   }  
   if (self->priv->accelerating) {
     speed_up (self);
@@ -120,14 +120,14 @@ gfloat car_get_current_speed (Car *self)
   return self->priv->current_speed;
 }
 
-gint car_get_current_position (Car *self)
+gint car_get_x(Car *self)
 {
-  return self->priv->position;
+  return self->priv->x;
 }
 
-guint64 car_get_current_distance (Car *self)
+guint64 car_get_y (Car *self)
 {
-  return self->priv->distance;
+  return self->priv->y;
 }
 
 gboolean fill_tank (Car * self, gint fuel_quantity)

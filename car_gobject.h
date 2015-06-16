@@ -59,9 +59,9 @@ gboolean is_accelerating (Car *self);
 
 gfloat car_get_current_speed (Car *self);
 
-gint car_get_current_position (Car *self);
+gint car_get_x (Car *self);
 
-guint64 car_get_current_distance (Car *self);
+guint64 car_get_y (Car *self);
 
 #endif /* CAR_GOBJECT_H */
 

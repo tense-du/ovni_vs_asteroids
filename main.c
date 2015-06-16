@@ -3,7 +3,6 @@
 #include "car_gobject.h"
 #include "battlefield.h"
 
-
 typedef struct _Simulation
 {
   Galaxy *galaxy;
@@ -46,19 +45,12 @@ static void key_pressed(GtkWidget *widget, GdkEvent *event, Car *car)
   }
 }
 
-static void display_battlefield (Simulation *self)
-{
-  if (battlefield_check_collision (self->galaxy)) {
-      g_print ("BOUUUUUUUUUUM, U SO DEAD\n");
-  }
-}
-
   static void
 display_car (Simulation *self)
 {
   gchar *speed_text = g_strdup_printf ("SPEED  %f", car_get_current_speed (self->car));
-  gchar *distance_text = g_strdup_printf ("DISTANCE %d", car_get_current_distance (self->car));
-  gchar *position_text = g_strdup_printf ("POSITION %d", car_get_current_position (self->car));
+  gchar *distance_text = g_strdup_printf ("DISTANCE %d", car_get_y (self->car));
+  gchar *position_text = g_strdup_printf ("POSITION %d", car_get_x (self->car));
   gtk_label_set_text (GTK_LABEL (self->speed_label), speed_text);
   g_free (speed_text);
   gtk_label_set_text (GTK_LABEL (self->distance_label), distance_text);
@@ -75,8 +67,6 @@ update_simulation (Simulation *s)
   battlefield_update (s->galaxy);
 
   display_car (s);
-
-  display_battlefield (s);
 
   return TRUE;
 }
