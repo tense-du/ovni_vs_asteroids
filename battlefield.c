@@ -108,10 +108,9 @@ gboolean battlefield_check_collision (Galaxy*self)
   }
   current = (Asteroid*)self->priv->asteroids->data;
 
-  if (car_distance >= current->ordinate_x && car_distance <= current->ordinate_x+current->asteroid_size - 1) {
-    if (car_position >= current->ordinate_y && car_position <= current->ordinate_y + current->asteroid_size - 1) {
-      g_print ("Collision with size %d asteroid at level %d, position %d\n", current->asteroid_size, current->ordinate_x, current->ordinate_y);
-      g_print ("Car at level %d, position %d\n", car_distance, car_position);
+  if (car_distance >= current->ordinate_x && car_distance <= current->ordinate_x+current->asteroid_size * 15 - 1) {
+    if (car_position >= current->ordinate_y && car_position <= current->ordinate_y + current->asteroid_size * 15 - 1) {
+      g_print ("Collision at level %d, position %d\n", car_distance, car_position);
       self->priv->dead = TRUE;
       return TRUE;
     }

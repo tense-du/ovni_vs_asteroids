@@ -49,7 +49,7 @@ static void key_pressed(GtkWidget *widget, GdkEvent *event, Car *car)
 static void display_battlefield (Simulation *self)
 {
   if (battlefield_check_collision (self->galaxy)) {
-      g_print ("BOUUUUUUUUUUM, U DEAD");
+      g_print ("BOUUUUUUUUUUM, U SO DEAD\n");
   }
 }
 
