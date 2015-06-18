@@ -6,25 +6,25 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#define GALAXY_TYPE                \
-  (galaxy_get_type())
-#define GALAXY(o)                  \
-  (G_TYPE_CHECK_INSTANCE_CAST ((o), GALAXY_TYPE, Galaxy))
-#define GALAXY_CLASS(c)            \
-  (G_TYPE_CHECK_CLASS_CAST ((c), GALAXY_TYPE, GalaxyCass))
-#define IS_GALAXY(o)               \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((o), GALAXY_TYPE))
-#define IS_GALAXY_CLASS(c)         \
-  (G_TYPE_CHECK_CLASS_TYPE ((c),  GALAXY_TYPE)) 
-#define GALAXY_GET_CLASS(o)        \
-  (G_TYPE_INSTANCE_GET_CLASS ((o), GALAXY_TYPE, GalaxyClass))
-#define GALAXY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
-      GALAXY_TYPE,                    \
-      GalaxyPrivate))
+#define BATTLEFIELD_TYPE                \
+  (battlefield_get_type())
+#define BATTLEFIELD(o)                  \
+  (G_TYPE_CHECK_INSTANCE_CAST ((o), BATTLEFIELD_TYPE, Battlefield))
+#define BATTLEFIELD_CLASS(c)            \
+  (G_TYPE_CHECK_CLASS_CAST ((c), BATTLEFIELD_TYPE, BattlefieldCass))
+#define IS_BATTLEFIELD(o)               \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((o), BATTLEFIELD_TYPE))
+#define IS_BATTLEFIELD_CLASS(c)         \
+  (G_TYPE_CHECK_CLASS_TYPE ((c),  BATTLEFIELD_TYPE)) 
+#define BATTLEFIELD_GET_CLASS(o)        \
+  (G_TYPE_INSTANCE_GET_CLASS ((o), BATTLEFIELD_TYPE, BattlefieldClass))
+#define BATTLEFIELD_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
+      BATTLEFIELD_TYPE,                    \
+      BattlefieldPrivate))
 
-typedef struct _Galaxy             Galaxy;
-typedef struct _GalaxyClass        GalaxyClass;
-typedef struct _GalaxyPrivate      GalaxyPrivate;
+typedef struct _Battlefield             Battlefield;
+typedef struct _BattlefieldClass        BattlefieldClass;
+typedef struct _BattlefieldPrivate      BattlefieldPrivate;
 
 
 typedef struct
@@ -35,27 +35,28 @@ typedef struct
 } Asteroid;
 
 
-struct _Galaxy
+struct _Battlefield
 {
   GObject parent;
 
-  GalaxyPrivate * priv;
+  BattlefieldPrivate * priv;
 };
 
-struct _GalaxyClass
+struct _BattlefieldClass
 {
   GObjectClass parent;
 };
 
-GType galaxy_get_type (void);
+GType battlefield_get_type (void);
 
-void create_asteroids (Galaxy*self);
+void create_asteroids (Battlefield *self);
 
-void galaxy_set_car (Galaxy *galaxy, Car *car);
+void battlefield_set_car (Battlefield *battlefield, Car *car);
 
-void battlefield_update (Galaxy *galaxy);
+void battlefield_update (Battlefield *self);
 
-gboolean battlefield_check_collision (Galaxy *galaxy);
+gboolean battlefield_check_collision (Battlefield *self);
 
-GList * battlefield_get_asteroids (Galaxy *galaxy);
+GList * battlefield_get_asteroids (Battlefield *self);
+
 #endif /* BATTLEFIELD_H */

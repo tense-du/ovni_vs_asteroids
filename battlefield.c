@@ -1,9 +1,10 @@
 #include "battlefield.h"
 #include "car_gobject.h"
+#include "config.h"
 #include <stdio.h>
 #include <glib.h>
 
-struct _GalaxyPrivate
+struct _BattlefieldPrivate
 {
   Car *car;
   gfloat x;
@@ -14,43 +15,43 @@ struct _GalaxyPrivate
   gboolean dead;
 };
 
-static void galaxy_class_init (GalaxyClass *klass)
+static void battlefield_class_init (BattlefieldClass *klass)
 {
-  g_type_class_add_private (klass, sizeof (GalaxyPrivate));
+  g_type_class_add_private (klass, sizeof (BattlefieldPrivate));
 }
 
-static void galaxy_init (Galaxy*self)
+static void battlefield_init (Battlefield *self)
 {
-  self->priv = GALAXY_GET_PRIVATE (self);
+  self->priv = BATTLEFIELD_GET_PRIVATE (self);
   self->priv->car = NULL;
-  self->priv->x= 800;
-  self->priv->y = 2000;
+  self->priv->x= BATTLEFIELD_X;
+  self->priv->y = BATTLEFIELD_Y;
   self->priv->asteroids = NULL;
   self->priv->end_race = FALSE;
   self->priv->victory = FALSE;
   self->priv->dead = FALSE;
 }
 
-G_DEFINE_TYPE (Galaxy, galaxy, G_TYPE_OBJECT)
+G_DEFINE_TYPE (Battlefield, battlefield, G_TYPE_OBJECT)
 
-GList *battlefield_get_asteroids (Galaxy *galaxy)
+GList *battlefield_get_asteroids (Battlefield *battlefield)
 {
-  return galaxy->priv->asteroids;
+  return battlefield->priv->asteroids;
 }
 
-void galaxy_set_car (Galaxy *galaxy, Car *car)
+void battlefield_set_car (Battlefield *battlefield, Car *car)
 {
-  galaxy->priv->car = car;
-  car_set_starting_point (galaxy->priv->car, galaxy->priv->x);
+  battlefield->priv->car = car;
+  car_set_starting_point (battlefield->priv->car);
 }
 
-void create_asteroids (Galaxy*self)
+void create_asteroids (Battlefield *self)
 {
   gint y;
   Asteroid* current_asteroid;
   GList *tmp;
 
-  for (y = 0; y < self->priv->y; y += 200) {
+  for (y = GAP; y < self->priv->y; y += GAP) {
     current_asteroid = g_malloc0(sizeof(Asteroid));
     current_asteroid->y = y;
     current_asteroid->x = g_rand_int_range (g_rand_new(), 0, self->priv->x +1 );
@@ -63,7 +64,7 @@ void create_asteroids (Galaxy*self)
   }
 }
 
-void battlefield_update (Galaxy *self)
+void battlefield_update (Battlefield *self)
 {
   Asteroid *current;
 
@@ -89,14 +90,14 @@ void battlefield_update (Galaxy *self)
   }
   else {
     current = (Asteroid*)self->priv->asteroids->data;
-    if (car_get_y (self->priv->car) >= current->y + current->size * 15) {
+    if (car_get_y (self->priv->car) >= current->y + current->size * RANGE) {
       self->priv->asteroids = self->priv->asteroids->next;
     }
   }
   battlefield_check_collision (self);
 }
 
-gboolean battlefield_check_collision (Galaxy*self)
+gboolean battlefield_check_collision (Battlefield *self)
 {
   Asteroid *current;
   guint64 car_y = car_get_y (self->priv->car);
@@ -105,12 +106,11 @@ gboolean battlefield_check_collision (Galaxy*self)
   if (self->priv->asteroids == NULL) {
     return FALSE;
   }
-
-  
+ 
   current = (Asteroid*)self->priv->asteroids->data;
 
-  if (car_y >= current->y && car_y < current->y + current->size * 15) {
-    if (car_x >= current->x && car_x < current->x + current->size * 15) {
+  if (car_y >= current->y && car_y < current->y + current->size * RANGE) {
+    if (car_x >= current->x && car_x < current->x + current->size * RANGE) {
       self->priv->dead = TRUE;
       return TRUE;
     }

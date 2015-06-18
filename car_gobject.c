@@ -1,4 +1,5 @@
 #include "car_gobject.h"
+#include "config.h"
 #include <stdio.h>
 
 
@@ -10,10 +11,8 @@ struct _CarPrivate
   gboolean accelerating;
   gboolean decelerating;
   gint x;
-  gint strafing;
   guint64 y;
-  gint right_limit;
-
+  gint strafing;
 };
 
 static void car_class_init (CarClass *klass)
@@ -24,23 +23,21 @@ static void car_class_init (CarClass *klass)
 static void car_init (Car *self)
 {
   self->priv = CAR_GET_PRIVATE (self);
-  self->priv->tank_capacity = 50; 
+  self->priv->tank_capacity = TANK_CAPACITY; 
   self->priv->current_tank_level = 0;
   self->priv->current_speed = 0;
   self->priv->accelerating = FALSE;
   self->priv->decelerating = FALSE;
   self->priv->x = 0;
-  self->priv->strafing = 0;
   self->priv->y = 0;
-  self->priv->right_limit = 0;
+  self->priv->strafing = 0;
 }
 
 G_DEFINE_TYPE (Car, car, G_TYPE_OBJECT)
 
-void car_set_starting_point (Car *self, gint limit)
+void car_set_starting_point (Car *self)
 {
-  self->priv->x = limit / 2;
-  self->priv->right_limit = limit;
+  self->priv->x = BATTLEFIELD_X / 2;
 }
 
 void car_set_accelerating (Car *self, gboolean accelerating)
@@ -67,14 +64,14 @@ void car_set_decelerating (Car *self, gboolean decelerating)
 }
 static void slow_down (Car *self)
 {
-  self->priv->current_speed -= 0.002;
+  self->priv->current_speed -= SLOW_DOWN;
   if (self->priv->current_speed < 0)
     self->priv->current_speed = 0;
 }
 
-static void decelerating (Car *self)
+static void decelerate (Car *self)
 {
-  self->priv->current_speed -= 0.05;
+  self->priv->current_speed -= DECELERATE;
   if (self->priv->current_speed <0) 
     self->priv->current_speed = 0;
 }
@@ -85,8 +82,8 @@ void car_update (Car *self)
   self->priv->y += per_second / 60 ;
 
   self->priv->x += self->priv->strafing;
-  if (self->priv->x > self->priv->right_limit) {
-    self->priv->x = self->priv->right_limit;
+  if (self->priv->x > BATTLEFIELD_X) {
+    self->priv->x = BATTLEFIELD_X;
   }
   if (self->priv->x < 0) {
     self->priv->x = 0;
@@ -94,9 +91,9 @@ void car_update (Car *self)
   if (self->priv->accelerating) {
     speed_up (self);
   } if (self->priv->decelerating) {
-    decelerating (self);
-  } else {
-    slow_down (self);
+    decelerate (self);
+  } if (!self->priv->accelerating && !self->priv->decelerating) {
+    slow_down(self);
   }
 }
 
@@ -110,7 +107,7 @@ gboolean speed_up (Car *self)
   if (self->priv->current_tank_level -1 < 0) {
     return FALSE;
   }
-  self->priv->current_speed += 0.015;
+  self->priv->current_speed += SPEED_UP;
   self->priv->current_tank_level -= 0.000027778;
   return TRUE;
 }

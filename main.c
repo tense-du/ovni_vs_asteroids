@@ -2,29 +2,29 @@
 #include <string.h>
 #include "car_gobject.h"
 #include "battlefield.h"
+#include "config.h"
 
 typedef struct _Simulation
 {
-  Galaxy *galaxy;
+  Battlefield *battlefield;
   Car *car;
-  GtkWidget *battlefield;
-  GtkWidget *current_asteroid;
+  GtkWidget *battlefield_display;
   GtkWidget *speed_label;
-  GtkWidget *position_label;
-  GtkWidget *distance_label;
+  GtkWidget *x_label;
+  GtkWidget *y_label;
 } Simulation;
 
 
 static void do_drawing (cairo_t *cr, Simulation *self)
 {
-  GList *asteroids = battlefield_get_asteroids (self->galaxy);
+  GList *asteroids = battlefield_get_asteroids (self->battlefield);
   Asteroid *current;
 
   cairo_rectangle(cr, car_get_x(self->car), 580, 20, 20);
 
   while (asteroids != NULL) {
     current = (Asteroid*)asteroids->data;
-    cairo_rectangle (cr, current->x, 580 - (current->y - car_get_y(self->car)), current->size * 15, current->size * 15);
+    cairo_rectangle (cr, current->x, 580 - (current->y - car_get_y(self->car)), current->size * RANGE, current->size * RANGE);
     asteroids = asteroids->next;
   }
 
@@ -79,25 +79,26 @@ static void key_pressed(GtkWidget *widget, GdkEvent *event, Car *car)
 display_car (Simulation *self)
 {
   gchar *speed_text = g_strdup_printf ("SPEED  %f", car_get_current_speed (self->car));
-  gchar *distance_text = g_strdup_printf ("DISTANCE %d", car_get_y (self->car));
-  gchar *position_text = g_strdup_printf ("POSITION %d", car_get_x (self->car));
+  gchar *x_text = g_strdup_printf ("X: %d", car_get_x (self->car));
+  gchar *y_text = g_strdup_printf ("Y: %d", car_get_y (self->car));
+
   gtk_label_set_text (GTK_LABEL (self->speed_label), speed_text);
   g_free (speed_text);
-  gtk_label_set_text (GTK_LABEL (self->distance_label), distance_text);
-  g_free (distance_text);
-  gtk_label_set_text (GTK_LABEL (self->position_label), position_text);
-  g_free (position_text);
-  gtk_widget_queue_draw_area (self->battlefield, 0, 0, 800, 600);
+  gtk_label_set_text (GTK_LABEL (self->x_label), x_text);
+  g_free (x_text);
+  gtk_label_set_text (GTK_LABEL (self->y_label), y_text);
+  g_free (y_text);
+  gtk_widget_queue_draw_area (self->battlefield_display, 0, 0, 800, 600);
 }
 
   static gboolean
-update_simulation (Simulation *s)
+update_simulation (Simulation *self)
 {
-  car_update (s->car);
+  car_update (self->car);
 
-  battlefield_update (s->galaxy);
+  battlefield_update (self->battlefield);
 
-  display_car (s);
+  display_car (self);
 
   return TRUE;
 }
@@ -105,7 +106,7 @@ update_simulation (Simulation *s)
 int main( int argc, char *argv[])
 {
   Car *c = NULL;
-  Galaxy *galaxy = NULL;
+  Battlefield *battlefield = NULL;
   GtkWidget *window;
   GtkWidget *vbox;
   Simulation *simulation = g_malloc0 (sizeof (Simulation));
@@ -115,32 +116,27 @@ int main( int argc, char *argv[])
   vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
   gtk_box_set_homogeneous (GTK_BOX (vbox), FALSE);
   c = g_object_new (CAR_TYPE, NULL);
-  galaxy = g_object_new (GALAXY_TYPE, NULL);
+  battlefield = g_object_new (BATTLEFIELD_TYPE, NULL);
 
   fill_tank (c, 50);
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(window), "KIKABOE");
-  gtk_window_set_default_size(GTK_WINDOW(window), 800, 1000);
+  gtk_window_set_default_size(GTK_WINDOW(window), 800, 800);
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 
   gtk_container_add (GTK_CONTAINER (window), vbox);
 
-  simulation->battlefield = gtk_drawing_area_new();
-  gtk_widget_set_size_request (simulation->battlefield, 800, 600);
-  gtk_box_pack_start (GTK_BOX (vbox), simulation->battlefield, FALSE, FALSE, 0);
+  simulation->battlefield_display = gtk_drawing_area_new();
+  gtk_widget_set_size_request (simulation->battlefield_display, 800, 600);
+  gtk_box_pack_start (GTK_BOX (vbox), simulation->battlefield_display, FALSE, FALSE, 0);
 
-  simulation->position_label = gtk_label_new("");
-  gtk_box_pack_start (GTK_BOX (vbox), simulation->position_label,FALSE, FALSE, 0);
-  gtk_label_set_text (GTK_LABEL (simulation->position_label), "POSITION");
+  simulation->x_label = gtk_label_new("");
+  gtk_box_pack_start (GTK_BOX (vbox), simulation->x_label,FALSE, FALSE, 0);
+  gtk_label_set_text (GTK_LABEL (simulation->x_label), "X");
 
-  simulation->current_asteroid = gtk_label_new("");
-  gtk_box_pack_start (GTK_BOX(vbox), simulation->current_asteroid, FALSE, FALSE, 0);
-  gtk_label_set_text (GTK_LABEL(simulation->current_asteroid), "ASTEROID");
-
-
-  simulation->distance_label = gtk_label_new ("");
-  gtk_box_pack_start(GTK_BOX(vbox), simulation->distance_label, FALSE, FALSE, 0);
-  gtk_label_set_text (GTK_LABEL(simulation->distance_label), "DISTANCE");
+  simulation->y_label = gtk_label_new ("");
+  gtk_box_pack_start(GTK_BOX(vbox), simulation->y_label, FALSE, FALSE, 0);
+  gtk_label_set_text (GTK_LABEL(simulation->y_label), "DISTANCE");
 
   simulation->speed_label = gtk_label_new ("");
   gtk_box_pack_start (GTK_BOX (vbox), simulation->speed_label, FALSE, FALSE, 0); 
@@ -151,7 +147,7 @@ int main( int argc, char *argv[])
   g_signal_connect (G_OBJECT (window), "key-release-event",
       G_CALLBACK(key_released), c);
 
-  g_signal_connect (G_OBJECT(simulation->battlefield), "draw",
+  g_signal_connect (G_OBJECT(simulation->battlefield_display), "draw",
       G_CALLBACK(on_draw_event), simulation);
 
   g_signal_connect(G_OBJECT(window), "destroy", 
@@ -159,15 +155,15 @@ int main( int argc, char *argv[])
 
   gtk_widget_show_all(window);
 
-  simulation->galaxy = galaxy;
+  simulation->battlefield = battlefield;
 
   simulation->car = c;
 
-  galaxy_set_car (galaxy, c);
+  battlefield_set_car (battlefield, c);
 
-  create_asteroids (galaxy);
+  create_asteroids (battlefield);
 
-  g_timeout_add (1000 / 60,(GSourceFunc)update_simulation, simulation);
+  g_timeout_add (1000,(GSourceFunc)update_simulation, simulation);
 
   gtk_main();
 

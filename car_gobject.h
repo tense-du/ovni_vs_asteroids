@@ -47,7 +47,7 @@ GType car_get_type (void);
 
 void car_update (Car *self);
 
-void car_set_starting_point (Car *self, gint starting_point);
+void car_set_starting_point (Car *self);
 
 void car_set_accelerating (Car *self, gboolean accelerating);
 

@@ -15,14 +15,14 @@ CFLAGS=`pkg-config --cflags glib-2.0 gobject-2.0` -g `pkg-config --cflags gtk+-3
 LIBS=`pkg-config --libs glib-2.0 gobject-2.0` `pkg-config --libs gtk+-3.0`
 
 OBJECTS=car_gobject.o main.o battlefield.o 
-SOURCES=car_gobject.c car_gobject.h main.c battlefield.h battlefield.c
+SOURCES=car_gobject.c car_gobject.h main.c battlefield.h battlefield.c config.h
 
 all: car
 car: $(OBJECTS)     
 	$(CC) -o $@ $(OBJECTS) $(LIBS)
 
-car_gobject.o: car_gobject.c car_gobject.h battlefield.h battlefield.c 
-main.o: main.c car_gobject.h battlefield.h
+car_gobject.o: car_gobject.c car_gobject.h battlefield.h battlefield.c config.h
+main.o: main.c car_gobject.h battlefield.h config.h
 
 
 clean:
