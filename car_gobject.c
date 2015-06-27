@@ -38,7 +38,7 @@ G_DEFINE_TYPE (Car, car, G_TYPE_OBJECT)
 
 void car_set_starting_point (Car *self)
 {
-  self->priv->x = (BATTLEFIELD_X / 2) - (CAR_SIZE / 2);
+  self->priv->x = (BATTLEFIELD_X / 2); 
   self->priv->image = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/0.png");
 }
 
@@ -54,9 +54,9 @@ void car_set_strafing (Car *self, CarDirection dir, gboolean on_off)
   }
   if (on_off == TRUE) {
     if (dir == CAR_RIGHT) {
-      self->priv->strafing = 2;
+      self->priv->strafing = STRAFING;
     } else {
-      self->priv->strafing = -2;
+      self->priv->strafing = -STRAFING;
     }
   }
 }
@@ -94,11 +94,11 @@ void car_update (Car *self)
   self->priv->y += per_second / 60 ;
 
   self->priv->x += self->priv->strafing;
-  if (self->priv->x > BATTLEFIELD_X) {
-    self->priv->x = BATTLEFIELD_X;
+  if (self->priv->x > BATTLEFIELD_X - CAR_SIZE / 2) {
+    self->priv->x = BATTLEFIELD_X - CAR_SIZE / 2;
   }
-  if (self->priv->x < 0) {
-    self->priv->x = 0;
+  if (self->priv->x < CAR_SIZE / 2) {
+    self->priv->x = CAR_SIZE / 2;
   }  
   if (self->priv->accelerating) {
     speed_up (self);

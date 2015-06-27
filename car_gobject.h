@@ -56,6 +56,8 @@ void car_set_strafing (Car *self, CarDirection dir, gboolean x);
 
 void car_set_decelerating (Car *self, gboolean decelerating);
 
+gboolean fill_tank (Car *self, gint quantity);
+
 gboolean is_accelerating (Car *self);
 
 gfloat car_get_current_speed (Car *self);

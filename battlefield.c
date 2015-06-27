@@ -11,9 +11,8 @@ struct _BattlefieldPrivate
   gfloat x;
   gfloat y;
   GList *asteroids;
-  gboolean end_race;
-  gboolean victory;
-  gboolean dead;
+  gboolean failure;
+  gboolean success;
 };
 
 static void battlefield_class_init (BattlefieldClass *klass)
@@ -28,9 +27,8 @@ static void battlefield_init (Battlefield *self)
   self->priv->x= BATTLEFIELD_X;
   self->priv->y = BATTLEFIELD_Y;
   self->priv->asteroids = NULL;
-  self->priv->end_race = FALSE;
-  self->priv->victory = FALSE;
-  self->priv->dead = FALSE;
+  self->priv->failure = FALSE;
+  self->priv->success = FALSE;
 }
 
 G_DEFINE_TYPE (Battlefield, battlefield, G_TYPE_OBJECT)
@@ -59,17 +57,16 @@ void create_asteroids (Battlefield *self)
     current_asteroid->size = g_rand_int_range (g_rand_new(), 1, 4);
     current_asteroid->x = g_rand_int_range (g_rand_new(), 0, self->priv->x +1 - current_asteroid->size * MULTIPLIER);
     if (current_asteroid->size == 1) {
-      current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/asteroids/1.png");
+      current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/Unicorns/1.png");
     }
     else if (current_asteroid->size == 2) {
-     current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/asteroids/2.png");
+      current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/Unicorns/2.png");
     }
     else if (current_asteroid->size == 3) {
-      current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/asteroids/3.png");
+      current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/Unicorns/3.png");
     }
-    else {
-      break;
-    }
+    current_asteroid->taken_image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/Unicorns/taken.png");
+    current_asteroid->taken = FALSE;
     self->priv->asteroids = g_list_append (self->priv->asteroids, current_asteroid);
   }
   for (tmp = self->priv->asteroids; tmp; tmp = tmp->next) {
@@ -83,52 +80,62 @@ void battlefield_update (Battlefield *self)
   Asteroid *current;
 
   if (self->priv->asteroids == NULL) {
-    if (self->priv->dead) {
-      self->priv->victory = FALSE;
-      if (self->priv->end_race == FALSE) {
-        if (car_get_y (self->priv->car) >= self->priv->y) {
-          self->priv->end_race = TRUE;
-          g_print ("LOOOSER");
-        }
-      }
-    }
-    else {
-      self->priv->victory = TRUE;
-      if (car_get_y(self->priv->car) >= self->priv->y) {
-        if (self->priv->end_race == FALSE) {
-          self->priv->end_race = TRUE;
-          g_print ("VICTOIRE!");
-        }
-      }
-    }
+    return;
   }
-  else {
-    current = (Asteroid*)self->priv->asteroids->data;
-    if (car_get_y (self->priv->car) >= current->y + current->size * MULTIPLIER) {
-      self->priv->asteroids = self->priv->asteroids->next;
+  current = (Asteroid*)self->priv->asteroids->data;
+  if (car_get_y (self->priv->car) >= current->y + current->size * MULTIPLIER) {
+    if (current->taken == FALSE) {
+      self->priv->failure = TRUE;
     }
+    self->priv->asteroids = self->priv->asteroids->next;
   }
   battlefield_check_collision (self);
 }
 
-gboolean battlefield_check_collision (Battlefield *self)
+static void battlefield_check_overlap (Battlefield *self, Asteroid *asteroid)
 {
-  Asteroid *current;
   guint64 car_y = car_get_y (self->priv->car);
   gint car_x = car_get_x (self->priv->car);
 
+  if (asteroid->x + asteroid->size * MULTIPLIER < car_x - CAR_SIZE /2 ||car_x + CAR_SIZE / 2 < asteroid->x || car_y + CAR_SIZE < asteroid->y || asteroid->y + asteroid->size * MULTIPLIER < car_y) {
+    return;
+  }
+  else {
+    asteroid->taken = TRUE;
+    return;
+  }
+}
+void battlefield_check_collision (Battlefield *self)
+{
+  Asteroid *current;
+
+  if (self->priv->asteroids == NULL) {
+    if (car_get_y (self->priv->car) >= BATTLEFIELD_Y) {
+      self->priv->success = TRUE;
+    }
+    return;
+  }
+  current = (Asteroid*)self->priv->asteroids->data;
+  battlefield_check_overlap (self, current);
+  return;
+}
+
+gboolean failure (Battlefield *self)
+{
   if (self->priv->asteroids == NULL) {
     return FALSE;
   }
- 
-  current = (Asteroid*)self->priv->asteroids->data;
 
-  if (car_y >= (guint64)current->y && car_y < (guint64)current->y + current->size * MULTIPLIER) {
-    if (car_x >= current->x && car_x < current->x + current->size * MULTIPLIER) {
-      self->priv->dead = TRUE;
-      return TRUE;
-    }
+  if (!self->priv->failure) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+gboolean success (Battlefield *self)
+{
+  if (self->priv->success) {
+    return TRUE;
   }
   return FALSE;
 }
-

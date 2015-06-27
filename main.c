@@ -11,9 +11,7 @@ typedef struct _Simulation
   Battlefield *battlefield;
   Car *car;
   GtkWidget *battlefield_display;
-  GtkWidget *speed_label;
-  GtkWidget *x_label;
-  GtkWidget *y_label;
+  GtkWidget *result_label;
 } Simulation;
 
 
@@ -35,15 +33,20 @@ static void do_drawing (cairo_t *cr, Simulation *self)
 
   cairo_save (cr);
   cairo_scale (cr, xs, ys);
-  cairo_set_source_surface(cr, car_image, (double)car_get_x (self->car) * ((double)width/(double)CAR_SIZE), (600 - CAR_SIZE) * ((double)height / (double)CAR_SIZE));
+  cairo_set_source_surface(cr, car_image, (double)(car_get_x (self->car) - CAR_SIZE / 2) * ((double)width/(double)CAR_SIZE), (600 - CAR_SIZE) * ((double)height / (double)CAR_SIZE));
   cairo_paint(cr);
   cairo_restore (cr);
 
-  for (asteroids; asteroids != NULL; asteroids= asteroids->next){
+  for (; asteroids != NULL; asteroids= asteroids->next){
     current = (Asteroid*)asteroids->data;
     dist = current->y - car_get_y(self->car);
     if (600 - dist > 0) {
-      asteroid_image = current->image;
+      if (current->taken == TRUE) {
+        asteroid_image = current->taken_image;
+      }
+      else {
+        asteroid_image = current->image;
+      }
       dist = 600 - dist;
       width = cairo_image_surface_get_width (asteroid_image);
       height = cairo_image_surface_get_height (asteroid_image);
@@ -108,19 +111,19 @@ static void key_pressed(GtkWidget *widget, GdkEvent *event, Car *car)
   }
 }
 
+static void display_result (Simulation *self, gboolean victory)
+{
+  if (victory) {
+    gtk_label_set_text (GTK_LABEL (self->result_label), "CONGRATS");
+    return;
+  }
+  gtk_label_set_text (GTK_LABEL (self->result_label), "YOU SUCK");
+  return;
+}
+
   static void
 display_car (Simulation *self)
 {
-  gchar *speed_text = g_strdup_printf ("SPEED  %f", car_get_current_speed (self->car));
-  gchar *x_text = g_strdup_printf ("X: %d", car_get_x (self->car));
-  gchar *y_text = g_strdup_printf ("Y: %d", car_get_y (self->car));
-
-  gtk_label_set_text (GTK_LABEL (self->speed_label), speed_text);
-  g_free (speed_text);
-  gtk_label_set_text (GTK_LABEL (self->x_label), x_text);
-  g_free (x_text);
-  gtk_label_set_text (GTK_LABEL (self->y_label), y_text);
-  g_free (y_text);
   gtk_widget_queue_draw_area (self->battlefield_display, 0, 0, 800, 600);
 }
 
@@ -133,6 +136,14 @@ update_simulation (Simulation *self)
 
   display_car (self);
 
+  if (failure (self->battlefield)) {
+    display_result (self, FALSE);
+    return FALSE;
+  }
+  if (success (self->battlefield)) {
+    display_result (self, TRUE);
+    return FALSE;
+  }
   return TRUE;
 }
 
@@ -163,17 +174,8 @@ int main( int argc, char *argv[])
   gtk_widget_set_size_request (simulation->battlefield_display, 800, 600);
   gtk_box_pack_start (GTK_BOX (vbox), simulation->battlefield_display, FALSE, FALSE, 0);
 
-  simulation->x_label = gtk_label_new("");
-  gtk_box_pack_start (GTK_BOX (vbox), simulation->x_label,FALSE, FALSE, 0);
-  gtk_label_set_text (GTK_LABEL (simulation->x_label), "X");
-
-  simulation->y_label = gtk_label_new ("");
-  gtk_box_pack_start(GTK_BOX(vbox), simulation->y_label, FALSE, FALSE, 0);
-  gtk_label_set_text (GTK_LABEL(simulation->y_label), "DISTANCE");
-
-  simulation->speed_label = gtk_label_new ("");
-  gtk_box_pack_start (GTK_BOX (vbox), simulation->speed_label, FALSE, FALSE, 0); 
-  gtk_label_set_text (GTK_LABEL (simulation->speed_label), "FIXME");
+  simulation->result_label = gtk_label_new("NOPE");
+  gtk_box_pack_start (GTK_BOX (vbox), simulation->result_label, TRUE, FALSE, 0);
 
   g_signal_connect (G_OBJECT (window), "key-press-event",
       G_CALLBACK(key_pressed), c);
@@ -193,7 +195,7 @@ int main( int argc, char *argv[])
   simulation->car = c;
 
   battlefield_set_up (simulation->battlefield, simulation->car);
-
+    
   g_timeout_add (1000/60,(GSourceFunc)update_simulation, simulation);
 
   gtk_main();

@@ -33,7 +33,9 @@ typedef struct
   gint x;
   gint y;
   gint size;
-  cairo_surface_t * image;
+  cairo_surface_t *image;
+  cairo_surface_t *taken_image;
+  gboolean taken;
 } Asteroid;
 
 
@@ -57,8 +59,12 @@ void battlefield_set_up (Battlefield *battlefield, Car *car);
 
 void battlefield_update (Battlefield *self);
 
-gboolean battlefield_check_collision (Battlefield *self);
+void battlefield_check_collision (Battlefield *self);
 
 GList * battlefield_get_asteroids (Battlefield *self);
+
+gboolean failure (Battlefield *self);
+
+gboolean success (Battlefield *self);
 
 #endif /* BATTLEFIELD_H */
