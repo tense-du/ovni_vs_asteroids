@@ -5,6 +5,7 @@
 #include "car_gobject.h"
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <cairo.h>
 
 #define BATTLEFIELD_TYPE                \
   (battlefield_get_type())
@@ -32,6 +33,7 @@ typedef struct
   gint x;
   gint y;
   gint size;
+  cairo_surface_t * image;
 } Asteroid;
 
 
@@ -51,7 +53,7 @@ GType battlefield_get_type (void);
 
 void create_asteroids (Battlefield *self);
 
-void battlefield_set_car (Battlefield *battlefield, Car *car);
+void battlefield_set_up (Battlefield *battlefield, Car *car);
 
 void battlefield_update (Battlefield *self);
 

@@ -4,6 +4,7 @@
 #include <glib-object.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <cairo.h>
 
 #define CAR_TYPE                \
     (car_get_type())
@@ -61,7 +62,8 @@ gfloat car_get_current_speed (Car *self);
 
 gint car_get_x (Car *self);
 
-guint64 car_get_y (Car *self);
+gint car_get_y (Car *self);
 
+cairo_surface_t *car_get_image (Car *self);
 #endif /* CAR_GOBJECT_H */
 

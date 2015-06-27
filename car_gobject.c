@@ -2,7 +2,6 @@
 #include "config.h"
 #include <stdio.h>
 
-
 struct _CarPrivate
 {
   gint tank_capacity;
@@ -13,6 +12,7 @@ struct _CarPrivate
   gint x;
   guint64 y;
   gint strafing;
+  cairo_surface_t *image;
 };
 
 static void car_class_init (CarClass *klass)
@@ -31,13 +31,15 @@ static void car_init (Car *self)
   self->priv->x = 0;
   self->priv->y = 0;
   self->priv->strafing = 0;
+  self->priv->image = NULL;
 }
 
 G_DEFINE_TYPE (Car, car, G_TYPE_OBJECT)
 
 void car_set_starting_point (Car *self)
 {
-  self->priv->x = BATTLEFIELD_X / 2;
+  self->priv->x = (BATTLEFIELD_X / 2) - (CAR_SIZE / 2);
+  self->priv->image = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/0.png");
 }
 
 void car_set_accelerating (Car *self, gboolean accelerating)
@@ -52,9 +54,9 @@ void car_set_strafing (Car *self, CarDirection dir, gboolean on_off)
   }
   if (on_off == TRUE) {
     if (dir == CAR_RIGHT) {
-      self->priv->strafing = 1;
+      self->priv->strafing = 2;
     } else {
-      self->priv->strafing = -1;
+      self->priv->strafing = -2;
     }
   }
 }
@@ -74,6 +76,16 @@ static void decelerate (Car *self)
   self->priv->current_speed -= DECELERATE;
   if (self->priv->current_speed <0) 
     self->priv->current_speed = 0;
+}
+
+gboolean speed_up (Car *self)
+{
+  if (self->priv->current_tank_level -1 < 0) {
+    return FALSE;
+  }
+  self->priv->current_speed += SPEED_UP;
+  self->priv->current_tank_level -= 0.000027778;
+  return TRUE;
 }
 
 void car_update (Car *self)
@@ -102,15 +114,6 @@ gboolean is_accelerating (Car *self)
   return self->priv->accelerating;
 }
 
-gboolean speed_up (Car *self)
-{
-  if (self->priv->current_tank_level -1 < 0) {
-    return FALSE;
-  }
-  self->priv->current_speed += SPEED_UP;
-  self->priv->current_tank_level -= 0.000027778;
-  return TRUE;
-}
 
 gfloat car_get_current_speed (Car *self)
 {
@@ -122,9 +125,9 @@ gint car_get_x(Car *self)
   return self->priv->x;
 }
 
-guint64 car_get_y (Car *self)
+gint car_get_y (Car *self)
 {
-  return self->priv->y;
+  return self->priv->y / 1000;
 }
 
 gboolean fill_tank (Car * self, gint fuel_quantity)
@@ -134,4 +137,9 @@ gboolean fill_tank (Car * self, gint fuel_quantity)
   }
   self->priv->current_tank_level += fuel_quantity;
   return TRUE;
+}
+
+cairo_surface_t *car_get_image (Car *self)
+{
+  return self->priv->image;
 }

@@ -3,6 +3,8 @@
 #include "car_gobject.h"
 #include "battlefield.h"
 #include "config.h"
+#include <cairo.h>
+
 
 typedef struct _Simulation
 {
@@ -19,13 +21,43 @@ static void do_drawing (cairo_t *cr, Simulation *self)
 {
   GList *asteroids = battlefield_get_asteroids (self->battlefield);
   Asteroid *current;
+  gint dist, width, height;
+  cairo_surface_t *car_image;
+  cairo_surface_t *asteroid_image;
+  double xs, ys;
 
-  cairo_rectangle(cr, car_get_x(self->car), 580, 20, 20);
+  car_image = car_get_image (self->car);
 
-  while (asteroids != NULL) {
+  width = cairo_image_surface_get_width (car_image);
+  height = cairo_image_surface_get_height (car_image);
+  xs = 1 / ((double) width/ (double) CAR_SIZE);
+  ys = 1 / ((double)height /(double) CAR_SIZE);
+
+  cairo_save (cr);
+  cairo_scale (cr, xs, ys);
+  cairo_set_source_surface(cr, car_image, (double)car_get_x (self->car) * ((double)width/(double)CAR_SIZE), (600 - CAR_SIZE) * ((double)height / (double)CAR_SIZE));
+  cairo_paint(cr);
+  cairo_restore (cr);
+
+  for (asteroids; asteroids != NULL; asteroids= asteroids->next){
     current = (Asteroid*)asteroids->data;
-    cairo_rectangle (cr, current->x, 580 - (current->y - car_get_y(self->car)), current->size * RANGE, current->size * RANGE);
-    asteroids = asteroids->next;
+    dist = current->y - car_get_y(self->car);
+    if (600 - dist > 0) {
+      asteroid_image = current->image;
+      dist = 600 - dist;
+      width = cairo_image_surface_get_width (asteroid_image);
+      height = cairo_image_surface_get_height (asteroid_image);
+      xs = 1 / ((double) width/ ((double) current->size * (double)MULTIPLIER));
+      ys = 1 / ((double)height /((double) current->size * (double)MULTIPLIER));
+      cairo_save(cr);
+      cairo_scale (cr, xs, ys);
+      cairo_set_source_surface (cr, asteroid_image, (double) current->x * ((double)width / ((double)current->size * (double)MULTIPLIER)), (dist - current->size * MULTIPLIER) * ((double)height / ((double)current->size * (double)MULTIPLIER)));
+      cairo_paint (cr);
+      cairo_restore (cr);
+    }
+    else {
+      break;
+    }
   }
 
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
@@ -36,6 +68,7 @@ static void do_drawing (cairo_t *cr, Simulation *self)
   cairo_fill(cr);
 
 }
+
 static gboolean on_draw_event (GtkWidget *widget, cairo_t *cr, Simulation *self)
 {
   do_drawing (cr, self);
@@ -159,11 +192,9 @@ int main( int argc, char *argv[])
 
   simulation->car = c;
 
-  battlefield_set_car (battlefield, c);
+  battlefield_set_up (simulation->battlefield, simulation->car);
 
-  create_asteroids (battlefield);
-
-  g_timeout_add (1000,(GSourceFunc)update_simulation, simulation);
+  g_timeout_add (1000/60,(GSourceFunc)update_simulation, simulation);
 
   gtk_main();
 

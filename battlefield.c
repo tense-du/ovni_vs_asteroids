@@ -3,6 +3,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <glib.h>
+#include <cairo.h>
 
 struct _BattlefieldPrivate
 {
@@ -39,10 +40,11 @@ GList *battlefield_get_asteroids (Battlefield *battlefield)
   return battlefield->priv->asteroids;
 }
 
-void battlefield_set_car (Battlefield *battlefield, Car *car)
+void battlefield_set_up (Battlefield *battlefield, Car *car)
 {
   battlefield->priv->car = car;
   car_set_starting_point (battlefield->priv->car);
+  create_asteroids (battlefield);
 }
 
 void create_asteroids (Battlefield *self)
@@ -54,8 +56,20 @@ void create_asteroids (Battlefield *self)
   for (y = GAP; y < self->priv->y; y += GAP) {
     current_asteroid = g_malloc0(sizeof(Asteroid));
     current_asteroid->y = y;
-    current_asteroid->x = g_rand_int_range (g_rand_new(), 0, self->priv->x +1 );
     current_asteroid->size = g_rand_int_range (g_rand_new(), 1, 4);
+    current_asteroid->x = g_rand_int_range (g_rand_new(), 0, self->priv->x +1 - current_asteroid->size * MULTIPLIER);
+    if (current_asteroid->size == 1) {
+      current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/asteroids/1.png");
+    }
+    else if (current_asteroid->size == 2) {
+     current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/asteroids/2.png");
+    }
+    else if (current_asteroid->size == 3) {
+      current_asteroid->image = cairo_image_surface_create_from_png ("/home/tense_du/Downloads/asteroids/3.png");
+    }
+    else {
+      break;
+    }
     self->priv->asteroids = g_list_append (self->priv->asteroids, current_asteroid);
   }
   for (tmp = self->priv->asteroids; tmp; tmp = tmp->next) {
@@ -90,7 +104,7 @@ void battlefield_update (Battlefield *self)
   }
   else {
     current = (Asteroid*)self->priv->asteroids->data;
-    if (car_get_y (self->priv->car) >= current->y + current->size * RANGE) {
+    if (car_get_y (self->priv->car) >= current->y + current->size * MULTIPLIER) {
       self->priv->asteroids = self->priv->asteroids->next;
     }
   }
@@ -109,8 +123,8 @@ gboolean battlefield_check_collision (Battlefield *self)
  
   current = (Asteroid*)self->priv->asteroids->data;
 
-  if (car_y >= current->y && car_y < current->y + current->size * RANGE) {
-    if (car_x >= current->x && car_x < current->x + current->size * RANGE) {
+  if (car_y >= (guint64)current->y && car_y < (guint64)current->y + current->size * MULTIPLIER) {
+    if (car_x >= current->x && car_x < current->x + current->size * MULTIPLIER) {
       self->priv->dead = TRUE;
       return TRUE;
     }

@@ -18,12 +18,12 @@ OBJECTS=car_gobject.o main.o battlefield.o
 SOURCES=car_gobject.c car_gobject.h main.c battlefield.h battlefield.c config.h
 
 all: car
-car: $(OBJECTS)     
+car: $(OBJECTS) *.h
 	$(CC) -o $@ $(OBJECTS) $(LIBS)
 
-car_gobject.o: car_gobject.c car_gobject.h battlefield.h battlefield.c config.h
+car_gobject.o: car_gobject.c car_gobject.h battlefield.h battlefield.c config.h 
 main.o: main.c car_gobject.h battlefield.h config.h
 
 
 clean:
-	rm *.o crr
+	rm -f *.o car
