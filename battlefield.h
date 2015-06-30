@@ -67,4 +67,5 @@ gboolean failure (Battlefield *self);
 
 gboolean success (Battlefield *self);
 
+cairo_surface_t* battlefield_get_image (Battlefield *self);
 #endif /* BATTLEFIELD_H */

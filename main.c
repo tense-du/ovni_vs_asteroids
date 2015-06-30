@@ -22,7 +22,18 @@ static void do_drawing (cairo_t *cr, Simulation *self)
   gint dist, width, height;
   cairo_surface_t *car_image;
   cairo_surface_t *asteroid_image;
+  cairo_surface_t *battlefield_image;
+  cairo_surface_t *battlefield_part;
   double xs, ys;
+
+  battlefield_image = battlefield_get_image (self->battlefield);
+  width = cairo_image_surface_get_width (battlefield_image);
+  height = cairo_image_surface_get_height (battlefield_image);
+  xs = width / BATTLEFIELD_X * car_get_x(self->car);
+  ys =  600 + (double)height / BATTLEFIELD_Y * car_get_y (self->car);
+  battlefield_part = cairo_surface_create_for_rectangle (battlefield_image, xs, ys, 800, 600);
+  cairo_set_source_surface (cr, battlefield_part, 0, 0);
+  cairo_paint(cr);
 
   car_image = car_get_image (self->car);
 
@@ -114,10 +125,10 @@ static void key_pressed(GtkWidget *widget, GdkEvent *event, Car *car)
 static void display_result (Simulation *self, gboolean victory)
 {
   if (victory) {
-    gtk_label_set_text (GTK_LABEL (self->result_label), "CONGRATS");
+    gtk_label_set_text (GTK_LABEL (self->result_label), "CONGRATS!");
     return;
   }
-  gtk_label_set_text (GTK_LABEL (self->result_label), "YOU SUCK");
+  gtk_label_set_text (GTK_LABEL (self->result_label), "YOU SUCK!");
   return;
 }
 
@@ -174,7 +185,7 @@ int main( int argc, char *argv[])
   gtk_widget_set_size_request (simulation->battlefield_display, 800, 600);
   gtk_box_pack_start (GTK_BOX (vbox), simulation->battlefield_display, FALSE, FALSE, 0);
 
-  simulation->result_label = gtk_label_new("NOPE");
+  simulation->result_label = gtk_label_new("SAVE THE UNICORNS!");
   gtk_box_pack_start (GTK_BOX (vbox), simulation->result_label, TRUE, FALSE, 0);
 
   g_signal_connect (G_OBJECT (window), "key-press-event",

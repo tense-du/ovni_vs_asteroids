@@ -12,7 +12,12 @@ struct _CarPrivate
   gint x;
   guint64 y;
   gint strafing;
-  cairo_surface_t *image;
+  cairo_surface_t *neutral;
+  cairo_surface_t *left;
+  cairo_surface_t* right;
+  cairo_surface_t* forward;
+  cairo_surface_t *forward_right;
+  cairo_surface_t* forward_left;
 };
 
 static void car_class_init (CarClass *klass)
@@ -31,7 +36,12 @@ static void car_init (Car *self)
   self->priv->x = 0;
   self->priv->y = 0;
   self->priv->strafing = 0;
-  self->priv->image = NULL;
+  self->priv->neutral = NULL;
+  self->priv->left = NULL;
+  self->priv->right = NULL;
+  self->priv->forward = NULL;
+  self->priv->forward_right = NULL;
+  self->priv->forward_left = NULL;
 }
 
 G_DEFINE_TYPE (Car, car, G_TYPE_OBJECT)
@@ -39,7 +49,15 @@ G_DEFINE_TYPE (Car, car, G_TYPE_OBJECT)
 void car_set_starting_point (Car *self)
 {
   self->priv->x = (BATTLEFIELD_X / 2); 
-  self->priv->image = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/0.png");
+  self->priv->neutral = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/neutral.png");
+
+  self->priv->left = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/neutral-left.png");
+  self->priv->right = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/neutral-right.png");
+  self->priv->forward = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/forward.png");
+  self->priv->forward_right = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/forward-right.png");
+  self->priv->forward_left = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/forward-left.png");
+  self->priv->neutral = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/neutral.png");
+  self->priv->neutral = cairo_image_surface_create_from_png("/home/tense_du/Downloads/ship/neutral.png");
 }
 
 void car_set_accelerating (Car *self, gboolean accelerating)
@@ -114,7 +132,6 @@ gboolean is_accelerating (Car *self)
   return self->priv->accelerating;
 }
 
-
 gfloat car_get_current_speed (Car *self)
 {
   return self->priv->current_speed;
@@ -141,5 +158,26 @@ gboolean fill_tank (Car * self, gint fuel_quantity)
 
 cairo_surface_t *car_get_image (Car *self)
 {
-  return self->priv->image;
+  if (self->priv->accelerating) {
+    if (self->priv->strafing == 0) {
+      return self->priv->forward;
+    }
+    if (self->priv->strafing < 0) {
+      return self->priv->forward_left;
+    }
+    else {
+      return self->priv->forward_right;
+    }
+  }
+  if (!self->priv->accelerating) {
+    if (self->priv->strafing == 0) {
+      return self->priv->neutral;
+    }
+    if (self->priv->strafing < 0) {
+      return self->priv->left;
+    }
+    else {
+      return self->priv->right;
+    }
+  }
 }
