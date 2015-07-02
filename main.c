@@ -4,7 +4,7 @@
 #include "battlefield.h"
 #include "config.h"
 #include <cairo.h>
-
+#include <glib.h>
 
 typedef struct _Simulation
 {
@@ -12,6 +12,8 @@ typedef struct _Simulation
   Car *car;
   GtkWidget *battlefield_display;
   GtkWidget *result_label;
+  GtkWidget *timer_label;
+  GTimer *timer;
 } Simulation;
 
 
@@ -30,10 +32,13 @@ do_drawing (cairo_t * cr, Simulation * self)
   battlefield_image = battlefield_get_image (self->battlefield);
   width = cairo_image_surface_get_width (battlefield_image);
   height = cairo_image_surface_get_height (battlefield_image);
+  height = height - 600;
   xs = width / BATTLEFIELD_X * car_get_x (self->car);
-  ys = 600 + (double) height / BATTLEFIELD_Y * car_get_y (self->car);
-  battlefield_part =
-      cairo_surface_create_for_rectangle (battlefield_image, xs, ys, 800, 600);
+  ys = height - (double)height/BATTLEFIELD_Y * (gint)car_get_y(self->car);
+  if (ys < 0) {
+    ys = 0;
+  }
+  battlefield_part = cairo_surface_create_for_rectangle (battlefield_image, xs, ys, 800, 600);
   cairo_set_source_surface (cr, battlefield_part, 0, 0);
   cairo_paint (cr);
 
@@ -90,7 +95,6 @@ do_drawing (cairo_t * cr, Simulation * self)
 
   cairo_stroke_preserve (cr);
   cairo_fill (cr);
-
 }
 
 static gboolean
@@ -136,9 +140,9 @@ key_pressed (GtkWidget * widget, GdkEvent * event, Car * car)
 }
 
 static void
-display_result (Simulation * self, gboolean victory)
+display_result (Simulation * self)
 {
-  if (victory) {
+  if (success (self->battlefield)) {
     gtk_label_set_text (GTK_LABEL (self->result_label), "CONGRATS!");
     return;
   }
@@ -155,18 +159,19 @@ display_car (Simulation * self)
 static gboolean
 update_simulation (Simulation * self)
 {
+  if (self->timer == NULL && is_accelerating (self->car)) {
+    self->timer = g_timer_new();
+  }
   car_update (self->car);
 
   battlefield_update (self->battlefield);
 
   display_car (self);
 
-  if (failure (self->battlefield)) {
-    display_result (self, FALSE);
-    return FALSE;
-  }
-  if (success (self->battlefield)) {
-    display_result (self, TRUE);
+  if (failure (self->battlefield)|| success(self->battlefield)) {
+    display_result (self);
+    g_timer_stop (self->timer);
+    g_print("Time :  %lf\n", g_timer_elapsed (self->timer, NULL));
     return FALSE;
   }
   return TRUE;
@@ -203,6 +208,9 @@ main (int argc, char *argv[])
 
   simulation->result_label = gtk_label_new ("SAVE THE UNICORNS!");
   gtk_box_pack_start (GTK_BOX (vbox), simulation->result_label, TRUE, FALSE, 0);
+
+  simulation->timer_label = gtk_label_new ("");
+  gtk_box_pack_start (GTK_BOX(vbox), simulation->timer_label, TRUE, FALSE, 0);
 
   g_signal_connect (G_OBJECT (window), "key-press-event",
       G_CALLBACK (key_pressed), c);

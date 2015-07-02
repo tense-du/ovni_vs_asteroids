@@ -16,13 +16,13 @@ struct _BattlefieldPrivate
   cairo_surface_t *image;
 };
 
-static void
+  static void
 battlefield_class_init (BattlefieldClass * klass)
 {
   g_type_class_add_private (klass, sizeof (BattlefieldPrivate));
 }
 
-static void
+  static void
 battlefield_init (Battlefield * self)
 {
   self->priv = BATTLEFIELD_GET_PRIVATE (self);
@@ -37,23 +37,23 @@ battlefield_init (Battlefield * self)
 
 G_DEFINE_TYPE (Battlefield, battlefield, G_TYPE_OBJECT)
 
-     GList *battlefield_get_asteroids (Battlefield * battlefield)
+GList *battlefield_get_asteroids (Battlefield * battlefield)
 {
   return battlefield->priv->asteroids;
 }
 
-void
+  void
 battlefield_set_up (Battlefield * battlefield, Car * car)
 {
   battlefield->priv->car = car;
   car_set_starting_point (battlefield->priv->car);
   create_asteroids (battlefield);
   battlefield->priv->image =
-      cairo_image_surface_create_from_png
-      ("/home/tense_du/Downloads/battlefield/galaxy.png");
+    cairo_image_surface_create_from_png
+    ("/home/tense_du/Downloads/battlefield/galaxy.png");
 }
 
-void
+  void
 create_asteroids (Battlefield * self)
 {
   gint y;
@@ -65,27 +65,27 @@ create_asteroids (Battlefield * self)
     current_asteroid->y = y;
     current_asteroid->size = g_rand_int_range (g_rand_new (), 1, 4);
     current_asteroid->x =
-        g_rand_int_range (g_rand_new (), 0,
-        self->priv->x + 1 - current_asteroid->size * MULTIPLIER);
+      g_rand_int_range (g_rand_new (), 0,
+          self->priv->x + 1 - current_asteroid->size * MULTIPLIER);
     if (current_asteroid->size == 1) {
       current_asteroid->image =
-          cairo_image_surface_create_from_png
-          ("/home/tense_du/Downloads/Unicorns/1.png");
+        cairo_image_surface_create_from_png
+        ("/home/tense_du/Downloads/Unicorns/1.png");
     } else if (current_asteroid->size == 2) {
       current_asteroid->image =
-          cairo_image_surface_create_from_png
-          ("/home/tense_du/Downloads/Unicorns/2.png");
+        cairo_image_surface_create_from_png
+        ("/home/tense_du/Downloads/Unicorns/2.png");
     } else if (current_asteroid->size == 3) {
       current_asteroid->image =
-          cairo_image_surface_create_from_png
-          ("/home/tense_du/Downloads/Unicorns/3.png");
+        cairo_image_surface_create_from_png
+        ("/home/tense_du/Downloads/Unicorns/3.png");
     }
     current_asteroid->taken_image =
-        cairo_image_surface_create_from_png
-        ("/home/tense_du/Downloads/Unicorns/taken.png");
+      cairo_image_surface_create_from_png
+      ("/home/tense_du/Downloads/Unicorns/taken.png");
     current_asteroid->taken = FALSE;
     self->priv->asteroids =
-        g_list_append (self->priv->asteroids, current_asteroid);
+      g_list_append (self->priv->asteroids, current_asteroid);
   }
   for (tmp = self->priv->asteroids; tmp; tmp = tmp->next) {
     current_asteroid = (Asteroid *) tmp->data;
@@ -94,8 +94,8 @@ create_asteroids (Battlefield * self)
   }
 }
 
-static void
-battlefield_check_overlap (Battlefield * self, Asteroid * asteroid)
+  static void
+battlefield_check_overlap (Battlefield * self, Asteroid* asteroid)
 {
   guint64 car_y = car_get_y (self->priv->car);
   gint car_x = car_get_x (self->priv->car);
@@ -110,7 +110,7 @@ battlefield_check_overlap (Battlefield * self, Asteroid * asteroid)
   }
 }
 
-void
+  void
 battlefield_update (Battlefield * self)
 {
   GList *tmp;
@@ -123,23 +123,28 @@ battlefield_update (Battlefield * self)
   }
 
   tmp = self->priv->asteroids;
-
   if (tmp == NULL) {
     return;
   }
 
-  current = (Asteroid *) tmp->data;
+  current = (Asteroid *)tmp->data;
   if (car_get_y (self->priv->car) >= current->y + current->size * MULTIPLIER) {
     if (current->taken == FALSE) {
       self->priv->failure = TRUE;
     }
     tmp = self->priv->asteroids = self->priv->asteroids->next;
-    current = (Asteroid *) self->priv->asteroids->data;
+    if (self->priv->asteroids == NULL) {
+      return;
+    }
+    else {
+      current = (Asteroid*)tmp->data;
+    }
   }
   battlefield_check_overlap (self, current);
+  return;
 }
 
-gboolean
+  gboolean
 failure (Battlefield * self)
 {
   if (self->priv->asteroids == NULL) {
@@ -152,7 +157,7 @@ failure (Battlefield * self)
   return TRUE;
 }
 
-gboolean
+  gboolean
 success (Battlefield * self)
 {
   if (self->priv->success) {
@@ -161,7 +166,7 @@ success (Battlefield * self)
   return FALSE;
 }
 
-cairo_surface_t *
+  cairo_surface_t *
 battlefield_get_image (Battlefield * self)
 {
   return self->priv->image;

@@ -1,6 +1,6 @@
 #include <gtk/gtk.h>
 #define BATTLEFIELD_X 800
-#define BATTLEFIELD_Y 2000
+#define BATTLEFIELD_Y 10000
 #define GAP 600
 #define MULTIPLIER 80 
 #define TANK_CAPACITY 50
