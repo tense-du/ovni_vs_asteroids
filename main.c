@@ -16,7 +16,6 @@ typedef struct _Simulation
   GTimer *timer;
 } Simulation;
 
-
 static void
 do_drawing (cairo_t * cr, Simulation * self)
 {
